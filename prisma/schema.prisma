@@ -29,3 +29,43 @@ model Team {
   updatedAt      DateTime? @updatedAt
 }
 
+model Home {
+  id          Int      @id @default(autoincrement())
+  sectionName String
+  heading     String?  @default("null")
+  description String?  @default("null")
+  image       String?  @default("null")
+  button      String?  @default("null")
+  link        String?  @default("null")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime? @updatedAt
+}
+
+model Timeline {
+  id          Int      @id @default(autoincrement())
+  sectionName String
+  heading     String?  @default("null")
+  description String?  @default("null")
+  date        DateTime? 
+  image       String?  @default("null")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime? @updatedAt
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  sectionName String
+  heading     String?  @default("null")
+  description String?  @default("null")
+  pagename    String   @default("null")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime? @updatedAt
+}
+
+model HealthCareProvider {
+  id          Int      @id @default(autoincrement())
+  sectionName String
+  description String?  @default("null")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime? @updatedAt
+}
