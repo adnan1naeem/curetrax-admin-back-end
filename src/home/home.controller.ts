@@ -28,12 +28,6 @@ export class HomeController {
     return this.homeService.getSections(sectionName);
   }
 
-  @Get(':id')
-  @UseGuards(JwtAuthGuard)
-  findOne(@Param('id') id: string) {
-    return this.homeService.findOne(+id);
-  }
-
   @Put(':id')
   @UseInterceptors(FileInterceptor('image'))
   @UseGuards(JwtAuthGuard)

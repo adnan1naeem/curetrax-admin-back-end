@@ -78,23 +78,6 @@ export class TimelineService {
     }
   }
 
-
-  async findOne(id: number) {
-    try {
-      const timeline = await this.prisma.timeline.findUnique({
-        where: { id },
-      });
-
-      if (!timeline) {
-        throw new NotFoundException(`Timeline entry with id ${id} not found`);
-      }
-
-      return timeline;
-    } catch (error) {
-      throw new InternalServerErrorException('Failed to fetch timeline entry: ' + error.message);
-    }
-  }
-
   // Update a timeline entry
   async update(
     id: number,
@@ -155,21 +138,35 @@ export class TimelineService {
   }
 
   // Delete a timeline entry
-  async remove(id: number) {
+  async remove(id: number, sectionName: string) {
     try {
-      const timeline = await this.prisma.timeline.delete({
-        where: { id },
+      // Check if a section exists with the given id and sectionName
+      const existingSection = await this.prisma.timeline.findUnique({
+        where: {
+          id: id,
+          sectionName: sectionName,
+        },
       });
-
+  
+      if (!existingSection) {
+        throw new NotFoundException(`No section found with id: ${id} and sectionName: ${sectionName}`);
+      }
+  
+      // Perform the deletion
+      const deletedSection = await this.prisma.timeline.delete({
+        where: {
+          id: id,
+          sectionName: sectionName,
+        },
+      });
+  
       return {
-        message: 'Timeline entry deleted successfully',
-        data: timeline,
+        message: 'Section deleted successfully',
+        data: deletedSection,
       };
     } catch (error) {
-      if (error.code === 'P2025') {
-        throw new NotFoundException(`Timeline entry with id ${id} not found`);
-      }
-      throw new InternalServerErrorException('Failed to delete timeline entry: ' + error.message);
+      throw new InternalServerErrorException('Failed to delete section: ' + error.message);
     }
   }
+  
 }

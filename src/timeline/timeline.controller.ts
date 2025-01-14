@@ -25,13 +25,6 @@ export class TimelineController {
     return this.timelineService.getSectionData(sectionName);
   }
 
-
-  @Get(':id')
-  @UseGuards(JwtAuthGuard)
-  findOne(@Param('id') id: string) {
-    return this.timelineService.findOne(+id);
-  }
-
   @Put(':id')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('image'))
@@ -49,7 +42,7 @@ export class TimelineController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  remove(@Param('id') id: string) {
-    return this.timelineService.remove(+id);
+  remove(@Param('id') id: string, @Param('sectionName') sectionName: string) {
+    return this.timelineService.remove(+id, sectionName);
   }
 }

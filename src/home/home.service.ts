@@ -116,20 +116,6 @@ export class HomeService {
     };
   }
 
-
-  async findOne(id: number) {
-    return this.prisma.home.findUnique({
-      where: { id },
-    });
-  }
-
-  async update(id: number, updateHomeDto: UpdateHomeDto) {
-    return this.prisma.home.update({
-      where: { id },
-      data: updateHomeDto,
-    });
-  }
-
   async remove(id: number, sectionName: string) {
     try {
       const existingSection = await this.prisma.home.findUnique({
