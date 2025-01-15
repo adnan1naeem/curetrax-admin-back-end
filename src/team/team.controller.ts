@@ -19,13 +19,11 @@ export class TeamController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
   async getAll() {
     return this.teamService.getAllTeamMembers();
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
   async getById(@Param('id') id: string) {
     const numericId = parseInt(id, 10);
     if (isNaN(numericId)) {

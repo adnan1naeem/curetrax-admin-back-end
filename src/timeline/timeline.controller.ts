@@ -17,7 +17,6 @@ export class TimelineController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
   findAll(@Query('sectionName') sectionName: string) {
     if (!sectionName) {
       throw new BadRequestException('Section name is required.');

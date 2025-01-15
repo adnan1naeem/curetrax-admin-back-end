@@ -20,7 +20,6 @@ export class HomeController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
   async getSections(@Query('sectionName') sectionName: string) {
     if (!sectionName) {
       throw new BadRequestException('sectionName is required');

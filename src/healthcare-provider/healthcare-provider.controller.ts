@@ -16,7 +16,6 @@ export class HealthCareProviderController {
   }
 
   @Get(':sectionName')
-  @UseGuards(JwtAuthGuard)
   findAll(@Param('sectionName') sectionName: string) {
     return this.healthCareProviderService.findAll(sectionName);
   }
