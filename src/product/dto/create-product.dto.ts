@@ -1,6 +1,6 @@
-import { IsString, IsOptional, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsInt } from 'class-validator';
 
-export class CreateProductDto {
+export class UpsertProductDto {
   @IsString()
   sectionName: string;
 
@@ -14,4 +14,8 @@ export class CreateProductDto {
 
   @IsEnum(['allo', 'car19'])
   pagename: 'allo' | 'car19';
+
+  @IsInt()
+  @IsOptional()
+  id?: number;  // Make id optional
 }

@@ -1,6 +1,10 @@
-import { IsString, IsOptional, IsNotEmpty } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, IsNumber } from 'class-validator';
 
-export class CreateTeamDto {
+export class UpsertTeamDto {
+  @IsOptional()
+  @IsNumber()
+  id?: string;
+
   @IsString()
   name: string;
 
@@ -9,14 +13,15 @@ export class CreateTeamDto {
 
   @IsOptional()
   @IsString()
-  linkedinUrl: string;
+  linkedinUrl?: string;
 
   @IsString()
   description: string;
 
+  @IsOptional()
   @IsNotEmpty()
-  imageUrl?: any;  
-  
+  imageUrl?: any;
+
   @IsOptional()
   @IsString()
   googleScholar?: string;
@@ -25,33 +30,3 @@ export class CreateTeamDto {
   @IsString()
   researchGate?: string;
 }
-
-export class UpdateTeamDto {
-    @IsOptional()
-    @IsString()
-    name?: string;
-  
-    @IsOptional()
-    @IsString()
-    profession?: string;
-  
-    @IsOptional()
-    @IsString()
-    linkedinUrl?: string;
-  
-    @IsOptional()
-    @IsString()
-    description?: string;
-  
-    @IsOptional()
-    @IsNotEmpty()
-    imageUrl?: any;
-  
-    @IsOptional()
-    @IsString()
-    googleScholar?: string;
-  
-    @IsOptional()
-    @IsString()
-    researchGate?: string;
-  }

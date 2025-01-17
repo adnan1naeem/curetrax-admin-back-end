@@ -1,133 +1,73 @@
-import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
-import { DatabaseService } from '../database/database.service'; // Update if you're using custom Prisma service
-import { CreateHealthCareProviderDto } from './dto/create-healthcare-provider.dto';
-import { UpdateHealthCareProviderDto } from './dto/update-healthcare-provider.dto';
+import { Injectable, NotFoundException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
+import { DatabaseService } from '../database/database.service'; // Update based on your setup
+import { CreateOrUpdateHealthCareProviderDto } from './dto/create-healthcare-provider.dto';
 
 @Injectable()
 export class HealthCareProviderService {
   constructor(private readonly prisma: DatabaseService) {}
 
-  async create(createHealthCareProviderDto: CreateHealthCareProviderDto) {
+  async upsert(
+    sectionName: string,
+    createOrUpdateDto?: CreateOrUpdateHealthCareProviderDto,
+  ) {
     try {
-      const healthCareProvider = await this.prisma.healthCareProvider.create({
-        data: createHealthCareProviderDto,
-      });
-
-      return {
-        message: 'HealthCareProvider created successfully',
-        data: healthCareProvider,
-      };
+      if (createOrUpdateDto) {
+        const { id, ...updateData } = createOrUpdateDto; // Destructure id from DTO
+  
+        if (id) {
+          // If id is provided, update the specific HealthCareProvider
+          const existingHealthCareProvider = await this.prisma.healthCareProvider.findUnique({
+            where: { id : parseInt(id) },
+          });
+  
+          if (!existingHealthCareProvider) {
+            throw new NotFoundException(`HealthCareProvider with id '${id}' not found.`);
+          }
+  
+          // Update the existing record
+          const updatedProvider = await this.prisma.healthCareProvider.update({
+            where: { id : parseInt(id) },
+            data: { ...updateData, sectionName },
+          });
+  
+          return {
+            message: 'HealthCareProvider updated successfully',
+            data: updatedProvider,
+          };
+        } else {
+          // If no id is provided, create a new HealthCareProvider
+          const newProvider = await this.prisma.healthCareProvider.create({
+            data: { ...updateData, sectionName },
+          });
+  
+          return {
+            message: 'HealthCareProvider created successfully',
+            data: newProvider,
+          };
+        }
+      } else {
+        throw new BadRequestException('CreateOrUpdateHealthCareProviderDto is required.');
+      }
     } catch (error) {
-      throw new InternalServerErrorException('Failed to create HealthCareProvider: ' + error.message);
+      throw new InternalServerErrorException(
+        'Failed to upsert HealthCareProvider: ' + error.message,
+      );
     }
   }
 
   async findAll(sectionName: string) {
-    if (!sectionName) {
-      throw new InternalServerErrorException('sectionName is required');
-    }
-
     try {
       const healthCareProviders = await this.prisma.healthCareProvider.findMany({
-        where: {
-          sectionName: sectionName, // Filter by sectionName
-        },
+        where: { sectionName },
       });
 
-      if (healthCareProviders.length === 0) {
-        throw new NotFoundException(`No HealthCareProviders found for sectionName: ${sectionName}`);
+      if (!healthCareProviders || healthCareProviders.length === 0) {
+        throw new NotFoundException(`No HealthCareProviders found for section '${sectionName}'.`);
       }
 
       return healthCareProviders;
     } catch (error) {
       throw new InternalServerErrorException('Failed to fetch HealthCareProviders: ' + error.message);
-    }
-  }
-
-  // Get a single HealthCareProvider by id and sectionName
-  async findOne(id: number, sectionName: string) {
-    try {
-      const healthCareProvider = await this.prisma.healthCareProvider.findUnique({
-        where: {
-          id: id,
-          sectionName: sectionName,
-        },
-      });
-
-      if (!healthCareProvider) {
-        throw new NotFoundException(
-          `HealthCareProvider with id ${id} and sectionName '${sectionName}' not found`,
-        );
-      }
-
-      return healthCareProvider;
-    } catch (error) {
-      throw new InternalServerErrorException('Failed to fetch HealthCareProvider: ' + error.message);
-    }
-  }
-
-  // Update an existing HealthCareProvider
-  async update(id: number, sectionName: string, updateHealthCareProviderDto: UpdateHealthCareProviderDto) {
-    try {
-      const existingHealthCareProvider = await this.prisma.healthCareProvider.findUnique({
-        where: {
-          id: id,
-          sectionName: sectionName,
-        },
-      });
-
-      if (!existingHealthCareProvider) {
-        throw new NotFoundException(
-          `HealthCareProvider with id ${id} and sectionName '${sectionName}' not found`,
-        );
-      }
-
-      const updatedHealthCareProvider = await this.prisma.healthCareProvider.update({
-        where: {
-          id: id,
-          sectionName: sectionName,
-        },
-        data: updateHealthCareProviderDto,
-      });
-
-      return {
-        message: 'HealthCareProvider updated successfully',
-        data: updatedHealthCareProvider,
-      };
-    } catch (error) {
-      throw new InternalServerErrorException('Failed to update HealthCareProvider: ' + error.message);
-    }
-  }
-
-  // Delete a HealthCareProvider
-  async remove(id: number, sectionName: string) {
-    try {
-      const existingHealthCareProvider = await this.prisma.healthCareProvider.findUnique({
-        where: {
-          id: id,
-          sectionName: sectionName,
-        },
-      });
-
-      if (!existingHealthCareProvider) {
-        throw new NotFoundException(
-          `HealthCareProvider with id ${id} and sectionName '${sectionName}' not found`,
-        );
-      }
-
-      const deletedHealthCareProvider = await this.prisma.healthCareProvider.delete({
-        where: {
-          id: id,
-          sectionName: sectionName,
-        },
-      });
-
-      return {
-        message: 'HealthCareProvider deleted successfully',
-        data: deletedHealthCareProvider,
-      };
-    } catch (error) {
-      throw new InternalServerErrorException('Failed to delete HealthCareProvider: ' + error.message);
     }
   }
 }

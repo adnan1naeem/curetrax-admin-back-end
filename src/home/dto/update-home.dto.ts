@@ -20,8 +20,4 @@ export class UpdateHomeDto {
   @IsOptional()
   @IsString()
   link?: string;
-
-  @IsOptional()
-  @IsString()
-  section?: string;
 }

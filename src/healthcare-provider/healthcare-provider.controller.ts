@@ -1,36 +1,23 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
-import { JwtAuthGuard } from '../jwt-auth.guard';
+import { Controller, Get, Post, Body, Query, Put } from '@nestjs/common';
 import { HealthCareProviderService } from './healthcare-provider.service';
-import { CreateHealthCareProviderDto } from './dto/create-healthcare-provider.dto';
-import { UpdateHealthCareProviderDto } from './dto/update-healthcare-provider.dto';
-@Controller('healthcare-provider')
+import { CreateOrUpdateHealthCareProviderDto } from './dto/create-healthcare-provider.dto';
+
+@Controller('healthcare-providers')
 export class HealthCareProviderController {
   constructor(private readonly healthCareProviderService: HealthCareProviderService) {}
 
-  @Post()
-  // @UseGuards(JwtAuthGuard)
-  create(@Body() createHealthCareProviderDto: CreateHealthCareProviderDto) {
-    return this.healthCareProviderService.create(createHealthCareProviderDto);
-  }
-
-  @Get(':sectionName')
-  findAll(@Param('sectionName') sectionName: string) {
-    return this.healthCareProviderService.findAll(sectionName);
-  }
-
-  @Put(':id/:sectionName')
-  // @UseGuards(JwtAuthGuard)
-  update(
-    @Param('id') id: string,
-    @Param('sectionName') sectionName: string,
-    @Body() updateHealthCareProviderDto: UpdateHealthCareProviderDto,
+  // API to create or update a HealthCareProvider
+  @Post('upsert')
+  async createOrUpdate(
+    @Query('sectionName') sectionName: string,
+    @Body() createOrUpdateDto: CreateOrUpdateHealthCareProviderDto,
   ) {
-    return this.healthCareProviderService.update(+id, sectionName, updateHealthCareProviderDto);
+    return this.healthCareProviderService.upsert(sectionName, createOrUpdateDto);
   }
 
-  @Delete(':id/:sectionName')
-  // @UseGuards(JwtAuthGuard)
-  remove(@Param('id') id: string, @Param('sectionName') sectionName: string) {
-    return this.healthCareProviderService.remove(+id, sectionName);
+  // API to fetch all HealthCareProviders for a section
+  @Get('all')
+  async getAll(@Query('sectionName') sectionName: string) {
+    return this.healthCareProviderService.findAll(sectionName);
   }
 }

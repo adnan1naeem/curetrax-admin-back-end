@@ -9,44 +9,28 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class HomeController {
   constructor(private readonly homeService: HomeService) {}
 
-  @Post()
-  // @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('image')) 
-  create(@Body() createHomeDto: CreateHomeDto,
-  @UploadedFile() imageUrl: Express.Multer.File
-  
-) {
-    return this.homeService.create(createHomeDto,imageUrl);
-  }
-
-  @Get()
-  async getSections(@Query('sectionName') sectionName: string) {
+  @Post('upsert')
+  @UseInterceptors(FileInterceptor('image'))
+  async upsert(
+    @Query('sectionName') sectionName: string, 
+    @Body() createHomeDto: CreateHomeDto,
+    @UploadedFile() imageUrl: Express.Multer.File,
+  ) {
     if (!sectionName) {
       throw new BadRequestException('sectionName is required');
     }
-    return this.homeService.getSections(sectionName);
+  
+    // If id is not provided in the body, use the id from the URL
+    const homeId = createHomeDto.id; 
+  
+    return this.homeService.upsert(homeId, sectionName, createHomeDto, imageUrl);
   }
 
-  @Put(':id')
-  @UseInterceptors(FileInterceptor('image'))
-  // @UseGuards(JwtAuthGuard)
-  async updateSection(
-    @Param('id') id: string,
-    @Query('sectionName') sectionName: string,
-    @Body() updateHomeDto: UpdateHomeDto,
-    @UploadedFile() image: Express.Multer.File,
-  ) {
-    
-    if (!sectionName || !id) {
-      throw new BadRequestException('sectionName and id are required');
+  @Get('all')
+  async getAll(@Query('sectionName') sectionName: string) {
+    if (!sectionName) {
+      throw new BadRequestException('sectionName is required');
     }
-
-    return this.homeService.updateSection(parseInt(id), sectionName, updateHomeDto, image);
-  }
-
-  @Delete(':id')
-  // @UseGuards(JwtAuthGuard)
-  async remove(@Param('id') id: string, @Param('sectionName') sectionName: string) {
-    return this.homeService.remove(+id, sectionName); // Pass the id and sectionName as arguments
+    return this.homeService.getAll(sectionName);
   }
 }

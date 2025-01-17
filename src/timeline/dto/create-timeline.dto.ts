@@ -1,18 +1,26 @@
-import { IsString, IsDateString } from 'class-validator';
+import { IsString, IsOptional, IsDateString, IsInt } from 'class-validator';
 
-export class CreateTimelineDto {
-  @IsString()
-  sectionName: string;
-
-  @IsString()
-  heading: string;
+export class UpsertTimelineDto {
+  @IsInt()
+  @IsOptional()
+  id?: string; // Optional ID for update operations
 
   @IsString()
-  description: string;
+  sectionName: string; // Required
+
+  @IsString()
+  @IsOptional()
+  heading?: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
 
   @IsDateString()
-  date: string;
+  @IsOptional()
+  date?: string;
 
   @IsString()
-  image: string;
+  @IsOptional()
+  image?: string;
 }
