@@ -19,7 +19,7 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   create(@Body() createProductDto: CreateProductDto) {
     // Ensure sectionName is provided
     if (!createProductDto.sectionName) {
@@ -37,7 +37,7 @@ export class ProductController {
   }
 
   @Put(':pageName/:sectionName/:id')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Param('pageName') pageName: 'allo' | 'car19',
@@ -48,7 +48,7 @@ export class ProductController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   remove(
     @Param('id', ParseIntPipe) id: number
   ) {

@@ -8,7 +8,7 @@ export class TeamController {
   constructor(private readonly teamService: TeamService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('imageUrl')) 
   async create(
     @Body() createTeamDto: CreateTeamDto,
@@ -33,7 +33,7 @@ export class TeamController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('imageUrl'))  
   async update(
     @Param('id') id: string,
@@ -48,7 +48,7 @@ export class TeamController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async deleteTeamMember(@Param('id') id: string) {
     const numericId = parseInt(id, 10);
     if (isNaN(numericId)) {

@@ -10,7 +10,7 @@ export class HomeController {
   constructor(private readonly homeService: HomeService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('image')) 
   create(@Body() createHomeDto: CreateHomeDto,
   @UploadedFile() imageUrl: Express.Multer.File
@@ -29,7 +29,7 @@ export class HomeController {
 
   @Put(':id')
   @UseInterceptors(FileInterceptor('image'))
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async updateSection(
     @Param('id') id: string,
     @Query('sectionName') sectionName: string,
@@ -45,7 +45,7 @@ export class HomeController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async remove(@Param('id') id: string, @Param('sectionName') sectionName: string) {
     return this.homeService.remove(+id, sectionName); // Pass the id and sectionName as arguments
   }

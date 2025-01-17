@@ -1,16 +1,14 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
-import { JwtAuthGuard } from '../jwt-auth.guard'; // Update path if necessary
+import { JwtAuthGuard } from '../jwt-auth.guard';
 import { HealthCareProviderService } from './healthcare-provider.service';
 import { CreateHealthCareProviderDto } from './dto/create-healthcare-provider.dto';
 import { UpdateHealthCareProviderDto } from './dto/update-healthcare-provider.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
-
 @Controller('healthcare-provider')
 export class HealthCareProviderController {
   constructor(private readonly healthCareProviderService: HealthCareProviderService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   create(@Body() createHealthCareProviderDto: CreateHealthCareProviderDto) {
     return this.healthCareProviderService.create(createHealthCareProviderDto);
   }
@@ -21,7 +19,7 @@ export class HealthCareProviderController {
   }
 
   @Put(':id/:sectionName')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   update(
     @Param('id') id: string,
     @Param('sectionName') sectionName: string,
@@ -31,7 +29,7 @@ export class HealthCareProviderController {
   }
 
   @Delete(':id/:sectionName')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   remove(@Param('id') id: string, @Param('sectionName') sectionName: string) {
     return this.healthCareProviderService.remove(+id, sectionName);
   }
