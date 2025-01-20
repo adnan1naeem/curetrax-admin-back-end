@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service'; // Adjust path accordingly
-import { CreateTimelineDto } from './dto/create-timeline.dto';
+import { UpsertTimelineDto } from './dto/create-timeline.dto';
 import { UpdateTimelineDto } from './dto/update-timeline.dto';
 import { S3Service } from '../s3/s3.service'; // Adjust path accordingly
 
@@ -11,48 +11,73 @@ export class TimelineService {
     private readonly s3Service: S3Service,
   ) {}
 
-  // Create a new Timeline entry
-  async create(createTimelineDto: CreateTimelineDto, image: Express.Multer.File | null) {
+  async upsert(upsertTimelineDto: UpsertTimelineDto,sectionName, image: Express.Multer.File | null) {
     try {
       let imageUrl = null;
-      let imageUploadStatus = 'Image upload failed';
-      
+      let imageUploadStatus = 'Image upload not attempted';
+
       // Handle image upload if provided
       if (image) {
         try {
-          imageUrl = await this.s3Service.uploadFile(image, 'home');
-          imageUploadStatus = 'Image uploaded successfully'; 
+          imageUrl = await this.s3Service.uploadFile(image, 'timeline');
+          imageUploadStatus = 'Image uploaded successfully';
         } catch (uploadError) {
-          imageUploadStatus = 'Image upload failed: ' + uploadError.message; 
+          imageUploadStatus = 'Image upload failed: ' + uploadError.message;
         }
       }
-      
-      console.log(createTimelineDto.date,"date");
-      let date ;
-      if(createTimelineDto.date){
-         date = new Date(createTimelineDto.date);
+
+      const date = upsertTimelineDto.date ? new Date(upsertTimelineDto.date) : null;
+      if (date && isNaN(date.getTime())) {
+        throw new BadRequestException('Invalid date format. Please provide a valid ISO 8601 date string.');
       }
-      
-      
-      
-  
-      const timeline = await this.prisma.timeline.create({
-        data: {
-          sectionName: createTimelineDto.sectionName,
-          heading: createTimelineDto.heading,
-          description: createTimelineDto.description,
-          date: date || null,  // Store the Date object
-          image: imageUrl || 'null',  // Store the image URL if uploaded, otherwise 'null'
-        },
-      });
-  
+
+      let timeline;
+      if (upsertTimelineDto.id) {
+        const parsedId = parseInt(upsertTimelineDto.id, 10);
+        if (isNaN(parsedId)) {
+          throw new BadRequestException('Invalid ID format. Please provide a valid numeric ID.');
+        }
+        const existingTimeline = await this.prisma.timeline.findUnique({
+          where: { id: parsedId },
+        });
+
+        if (existingTimeline) {
+          // Update the timeline entry
+          timeline = await this.prisma.timeline.update({
+            where: { id: parsedId },
+            data: {
+              sectionName: sectionName,
+              heading: upsertTimelineDto.heading,
+              description: upsertTimelineDto.description,
+              date: date || existingTimeline.date,
+              image: imageUrl || existingTimeline.image,
+            },
+          });
+        } else {
+          throw new NotFoundException(
+            `Timeline entry with id ${upsertTimelineDto.id} not found for update.`,
+          );
+        }
+      } else {
+        // Create a new timeline entry
+        timeline = await this.prisma.timeline.create({
+          data: {
+            sectionName: sectionName,
+            heading: upsertTimelineDto.heading,
+            description: upsertTimelineDto.description,
+            date: date,
+            image: imageUrl || 'null',
+          },
+        });
+      }
+
       return {
-        message: 'Timeline entry created successfully',
+        message: 'Timeline entry upserted successfully',
         data: timeline,
         imageUploadStatus,
       };
     } catch (error) {
-      throw new InternalServerErrorException('Failed to create timeline entry: ' + error.message);
+      throw new InternalServerErrorException('Failed to upsert timeline entry: ' + error.message);
     }
   }
 
@@ -75,65 +100,6 @@ export class TimelineService {
       };
     } catch (error) {
       throw new InternalServerErrorException('Failed to fetch timelines: ' + error.message);
-    }
-  }
-
-  // Update a timeline entry
-  async update(
-    id: number,
-    sectionName: string,
-    updateTimelineDto: UpdateTimelineDto,
-    image: Express.Multer.File | null
-  ) {
-    try {
-      const existingTimeline = await this.prisma.timeline.findUnique({
-        where: { id, sectionName },
-      });
-  
-      if (!existingTimeline) {
-        throw new NotFoundException(
-          `Timeline entry with id ${id} and sectionName '${sectionName}' not found`
-        );
-      }
-  
-      let imageUrl = existingTimeline.image; 
-      let imageUploadStatus = 'Image upload not attempted';
-  
-      if (image) {
-        try {
-          imageUrl = await this.s3Service.uploadFile(image, 'timeline');
-          imageUploadStatus = 'Image uploaded successfully';
-        } catch (uploadError) {
-          imageUploadStatus = 'Image upload failed: ' + uploadError.message;
-        }
-      }
-  
-      const updateData: any = { ...updateTimelineDto, image: imageUrl };
-  
-      if (updateTimelineDto.date) {
-        const date = new Date(updateTimelineDto.date);
-        if (isNaN(date.getTime())) {
-          throw new BadRequestException('Invalid date format. Please provide a valid ISO 8601 date string.');
-        }
-        updateData.date = date;
-      }
-  
-      // Perform the update
-      const updatedTimeline = await this.prisma.timeline.update({
-        where: { id },
-        data: updateData,
-      });
-  
-      return {
-        message: 'Timeline entry updated successfully',
-        data: updatedTimeline,
-        imageUploadStatus,
-      };
-    } catch (error) {
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
-        throw error;
-      }
-      throw new InternalServerErrorException('Failed to update timeline entry: ' + error.message);
     }
   }
 

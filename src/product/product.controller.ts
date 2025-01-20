@@ -1,57 +1,41 @@
-// src/product/product.controller.ts
 import { 
   Controller, 
   Get, 
   Post, 
-  Put, 
-  Delete, 
-  Param, 
   Body, 
-  ParseIntPipe, 
+  Query, 
   UseGuards 
 } from '@nestjs/common';
 import { ProductService } from './product.service';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { UpsertProductDto } from './dto/create-product.dto';
 import { JwtAuthGuard } from '../jwt-auth.guard';
+
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
-  @Post()
+  // Upsert API: Create or Update a product
+  @Post('upsert')
   // @UseGuards(JwtAuthGuard)
-  create(@Body() createProductDto: CreateProductDto) {
-    // Ensure sectionName is provided
-    if (!createProductDto.sectionName) {
-      throw new Error('sectionName is required');
+  async upsert(
+    @Query('sectionName') sectionName: string,
+    @Body() createProductDto: UpsertProductDto,
+  ) {
+    if (!sectionName || !createProductDto.pagename) {
+      throw new Error('sectionName and pagename are required');
     }
-    return this.productService.create(createProductDto);
+    return this.productService.upsert(sectionName, createProductDto);
   }
 
-  @Get(':pageName/:sectionName')
-  findAll(
-    @Param('pageName') pageName: 'allo' | 'car19', 
-    @Param('sectionName') sectionName: string
+  // Get all products by pageName and sectionName
+  @Get('all')
+  async getAll(
+    @Query('pageName') pageName: 'allo' | 'car19', 
+    @Query('sectionName') sectionName: string,
   ) {
-    return this.productService.findAll(pageName, sectionName);
-  }
-
-  @Put(':pageName/:sectionName/:id')
-  // @UseGuards(JwtAuthGuard)
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Param('pageName') pageName: 'allo' | 'car19',
-    @Param('sectionName') sectionName: string,
-    @Body() updateProductDto: UpdateProductDto
-  ) {
-    return this.productService.update(id, pageName, sectionName, updateProductDto);
-  }
-
-  @Delete(':id')
-  // @UseGuards(JwtAuthGuard)
-  remove(
-    @Param('id', ParseIntPipe) id: number
-  ) {
-    return this.productService.remove(id);
+    if (!pageName || !sectionName) {
+      throw new Error('pageName and sectionName are required');
+    }
+    return this.productService.getAll(pageName, sectionName);
   }
 }

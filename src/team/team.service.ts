@@ -1,5 +1,5 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { CreateTeamDto, UpdateTeamDto } from './dto/team.dto';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { UpsertTeamDto } from './dto/team.dto';
 import { DatabaseService } from 'src/database/database.service';
 import { S3Service } from 'src/s3/s3.service';
 @Injectable()
@@ -9,31 +9,72 @@ export class TeamService {
         private readonly s3Service: S3Service,
       ) {}
 
-    async createTeamMember(
-        CreateTeamDto: CreateTeamDto,
-        imageUrl: Express.Multer.File | null,
-      ) {
-        let profileImageUrl = '';
-        
-        if (imageUrl) {
-            profileImageUrl = await this.s3Service.uploadFile(imageUrl,'teams');
-        }        
-        const createdTeamMember = await this.prisma.team.create({
-          data: {
-            name: CreateTeamDto.name,
-            profession: CreateTeamDto.profession,
-            linkedinUrl: CreateTeamDto.linkedinUrl,
-            description: CreateTeamDto.description,
-            imageUrl: profileImageUrl,
-            googleScholar: CreateTeamDto.googleScholar,
-            researchGate: CreateTeamDto.researchGate,
-            
-          },
-        });
-        return {
-          message: 'Team Member created successfully',
-          data: createdTeamMember,
-        };
+      async upsertTeamMember(upsertTeamDto: UpsertTeamDto, image: Express.Multer.File | null) {
+        try {
+          let profileImageUrl = null;
+          let imageUploadStatus = 'Image upload not attempted';
+    
+          // Handle image upload if provided
+          if (image) {
+            try {
+              profileImageUrl = await this.s3Service.uploadFile(image, 'teams');
+              imageUploadStatus = 'Image uploaded successfully';
+            } catch (uploadError) {
+              imageUploadStatus = 'Image upload failed: ' + uploadError.message;
+            }
+          }
+    
+          let teamMember;
+          if (upsertTeamDto.id) {
+            const parsedId = parseInt(upsertTeamDto.id, 10);
+            if (isNaN(parsedId)) {
+              throw new BadRequestException('Invalid ID format. Please provide a valid numeric ID.');
+            }
+            // Check if the team member exists
+            const existingTeamMember = await this.prisma.team.findUnique({
+              where: { id: parsedId },
+            });
+    
+            if (existingTeamMember) {
+              // Update the team member
+              teamMember = await this.prisma.team.update({
+                where: { id: parsedId },
+                data: {
+                  name: upsertTeamDto.name || existingTeamMember.name,
+                  profession: upsertTeamDto.profession || existingTeamMember.profession,
+                  linkedinUrl: upsertTeamDto.linkedinUrl || existingTeamMember.linkedinUrl,
+                  description: upsertTeamDto.description || existingTeamMember.description,
+                  googleScholar: upsertTeamDto.googleScholar || existingTeamMember.googleScholar,
+                  researchGate: upsertTeamDto.researchGate || existingTeamMember.researchGate,
+                  imageUrl: profileImageUrl || existingTeamMember.imageUrl,
+                },
+              });
+            } else {
+              throw new NotFoundException(`Team member with ID ${upsertTeamDto.id} not found for update.`);
+            }
+          } else {
+            // Create a new team member
+            teamMember = await this.prisma.team.create({
+              data: {
+                name: upsertTeamDto.name,
+                profession: upsertTeamDto.profession,
+                linkedinUrl: upsertTeamDto.linkedinUrl,
+                description: upsertTeamDto.description,
+                googleScholar: upsertTeamDto.googleScholar,
+                researchGate: upsertTeamDto.researchGate,
+                imageUrl: profileImageUrl || 'null',
+              },
+            });
+          }
+    
+          return {
+            message: 'Team member upserted successfully',
+            data: teamMember,
+            imageUploadStatus,
+          };
+        } catch (error) {
+          throw new InternalServerErrorException('Failed to upsert team member: ' + error.message);
+        }
       }
 
     async getAllTeamMembers() {
@@ -77,46 +118,6 @@ export class TeamService {
           throw new InternalServerErrorException(
             `An error occurred while retrieving the team member: ${error.message}`,
           );
-        }
-    }
-
-    async updateTeamMember(id: number, updateTeamDto: UpdateTeamDto, imageUrl: Express.Multer.File) {
-        let profileImageUrl = '';
-
-        try {
-            if (imageUrl) {
-                profileImageUrl = await this.s3Service.uploadFile(imageUrl, 'teams');
-            }
-            const existingTeamMember = await this.prisma.team.findUnique({
-                where: { id },
-            });
-
-            if (!existingTeamMember) {
-                throw new NotFoundException(`Team member with ID ${id} not found`);
-            }
-
-            const updateData: any = { ...updateTeamDto };
-
-            if (profileImageUrl) {
-                updateData.imageUrl = profileImageUrl;
-            }
-
-            const updatedTeamMember = await this.prisma.team.update({
-                where: { id },
-                data: updateData,
-            });
-
-            return {
-                message: 'Team member updated successfully',
-                data: updatedTeamMember,
-            };
-
-        } catch (error) {
-            if (error instanceof Error && error.message.includes('uploadFile')) {
-                throw new InternalServerErrorException('Error uploading file to S3');
-            }
-
-            throw new InternalServerErrorException(`An error occurred while updating the team member: ${error.message}`);
         }
     }
 

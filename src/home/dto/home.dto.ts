@@ -5,22 +5,22 @@ export class CreateHomeDto {
   sectionName: string;
 
   @IsString()
-  @IsOptional() // Optional since it can be null
+  @IsOptional()
   heading?: string;
 
   @IsString()
-  @IsOptional() // Optional since it can be null
+  @IsOptional()
   description?: string;
 
   @IsString()
-  @IsOptional() // Optional since it can be null
-  image?: string;
-
-  @IsString()
-  @IsOptional() // Optional since it can be null
+  @IsOptional()
   button?: string;
 
   @IsString()
-  @IsOptional() // Optional since it can be null
+  @IsOptional()
   link?: string;
+
+  @IsString()
+  @IsOptional()
+  id?: string; // Make id optional in the body
 }
