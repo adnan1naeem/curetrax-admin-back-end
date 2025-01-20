@@ -17,7 +17,7 @@ export class HealthCareProviderService {
         if (id) {
           // If id is provided, update the specific HealthCareProvider
           const existingHealthCareProvider = await this.prisma.healthCareProvider.findUnique({
-            where: { id : parseInt(id) },
+            where: { id : parseInt(id) , sectionName :  sectionName},
           });
   
           if (!existingHealthCareProvider) {

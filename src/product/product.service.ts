@@ -21,7 +21,7 @@ export class ProductService {
       if (createProductDto.id) {
         // If id is provided, update the existing product
         const existingProduct = await this.prisma.product.findUnique({
-          where: { id: createProductDto.id },
+          where: { id: createProductDto.id ,sectionName : sectionName},
         });
   
         if (!existingProduct) {
@@ -39,8 +39,12 @@ export class ProductService {
         };
       } else {
           // If no product is found, create a new product
+          
           const newProduct = await this.prisma.product.create({
-            data: createProductDto,
+            data: {
+              ...createProductDto,
+              sectionName: sectionName,
+            },
           });
   
           return {
