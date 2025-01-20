@@ -56,12 +56,12 @@ export class TeamService {
             // Create a new team member
             teamMember = await this.prisma.team.create({
               data: {
-                name: upsertTeamDto.name,
-                profession: upsertTeamDto.profession,
-                linkedinUrl: upsertTeamDto.linkedinUrl,
-                description: upsertTeamDto.description,
-                googleScholar: upsertTeamDto.googleScholar,
-                researchGate: upsertTeamDto.researchGate,
+                name: upsertTeamDto.name || 'null',
+                profession: upsertTeamDto.profession || 'null',
+                linkedinUrl: upsertTeamDto.linkedinUrl || 'null',
+                description: upsertTeamDto.description || 'null',
+                googleScholar: upsertTeamDto.googleScholar || 'null',
+                researchGate: upsertTeamDto.researchGate || 'null',
                 imageUrl: profileImageUrl || 'null',
               },
             });
