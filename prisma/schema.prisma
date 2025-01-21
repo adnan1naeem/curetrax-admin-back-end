@@ -54,6 +54,7 @@ model Timeline {
   description String?  @default("null")
   date        DateTime? 
   image       String?  @default("null")
+  imagePath   String?  @default("null")
   createdAt   DateTime @default(now())
   updatedAt   DateTime? @updatedAt
 }

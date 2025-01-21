@@ -9,19 +9,15 @@ export class TeamService {
         private readonly s3Service: S3Service,
       ) {}
 
-      async upsertTeamMember(upsertTeamDto: UpsertTeamDto, image: Express.Multer.File | null) {
+      async upsertTeamMember(upsertTeamDto: UpsertTeamDto, image: Express.Multer.File | null,req:any,) {
         try {
           let profileImageUrl = null;
           let imageUploadStatus = 'Image upload not attempted';
     
           // Handle image upload if provided
           if (image) {
-            try {
-              profileImageUrl = await this.s3Service.uploadFile(image, 'teams');
-              imageUploadStatus = 'Image uploaded successfully';
-            } catch (uploadError) {
-              imageUploadStatus = 'Image upload failed: ' + uploadError.message;
-            }
+            const baseUrl = `${req.protocol}://${req.get('host')}`;
+            profileImageUrl = `${baseUrl}/uploads/teams/${image.filename}`;
           }
     
           let teamMember;

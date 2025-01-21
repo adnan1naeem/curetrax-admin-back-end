@@ -1,21 +1,33 @@
-import { Controller, Post, Body, UploadedFile, UseInterceptors, Get, Param, Patch,Delete ,BadRequestException, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UploadedFile, UseInterceptors, Get, Param, Patch,Delete ,BadRequestException, UseGuards, Req } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UpsertTeamDto } from './dto/team.dto';
 import { TeamService } from './team.service';
 import { JwtAuthGuard } from 'src/jwt-auth.guard';
+import { join } from 'path';
+import { diskStorage } from 'multer';
 @Controller('teams')
 export class TeamController {
   constructor(private readonly teamService: TeamService) {}
 
   @Post('upsert')
-  // @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('imageUrl')) 
+  @UseInterceptors(
+    FileInterceptor('imageUrl', {
+      storage: diskStorage({
+        destination: join(__dirname, '../../uploads/teams'), // Path to upload folder
+        filename: (req, file, callback) => {
+          const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+          const fileExt = file.originalname.split('.').pop();
+          callback(null, `${file.fieldname}-${uniqueSuffix}.${fileExt}`);
+        },
+      }),
+    }),
+  )
   async create(
     @Body() createTeamDto: UpsertTeamDto,
-    @UploadedFile() imageUrl: Express.Multer.File
+    @UploadedFile() imageUrl: Express.Multer.File,
+    @Req() req: any,
   ) {
-
-    return this.teamService.upsertTeamMember(createTeamDto,imageUrl);
+    return this.teamService.upsertTeamMember(createTeamDto, imageUrl,req);
   }
 
   @Get('all')
