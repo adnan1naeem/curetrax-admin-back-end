@@ -15,6 +15,9 @@ export class UpsertTimelineDto {
   @IsString()
   @IsOptional()
   description?: string;
+  @IsString()
+  @IsOptional()
+  imagePath?: string;
 
   @IsDateString()
   @IsOptional()

@@ -51,6 +51,7 @@ export class TimelineService {
               description: upsertTimelineDto.description,
               date: date || existingTimeline.date,
               image: imageUrl || existingTimeline.image,
+              imagePath : upsertTimelineDto.imagePath,
             },
           });
         } else {
@@ -67,6 +68,7 @@ export class TimelineService {
             description: upsertTimelineDto.description,
             date: date,
             image: imageUrl || 'null',
+            imagePath: upsertTimelineDto.imagePath,
           },
         });
       }
