@@ -1,10 +1,12 @@
-import { Controller, Get, Post, Body, Query, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Put, Delete } from '@nestjs/common';
 import { HealthCareProviderService } from './healthcare-provider.service';
+import { DatabaseService } from 'src/database/database.service';
 import { CreateOrUpdateHealthCareProviderDto } from './dto/create-healthcare-provider.dto';
+import { PrismaClient } from '@prisma/client';
 
 @Controller('healthcare-providers')
 export class HealthCareProviderController {
-  constructor(private readonly healthCareProviderService: HealthCareProviderService) {}
+  constructor(private readonly healthCareProviderService: HealthCareProviderService ,private readonly prisma: DatabaseService) {}
 
   // API to create or update a HealthCareProvider
   @Post('upsert')
@@ -19,5 +21,11 @@ export class HealthCareProviderController {
   @Get('all')
   async getAll(@Query('sectionName') sectionName: string) {
     return this.healthCareProviderService.findAll(sectionName);
+  }
+
+  @Delete()
+  async deleteRecord(@Query('id') id: string) {
+    const modelName = 'healthCareProvider'; // Prisma model name (case-sensitive)
+    return this.prisma.deleteRecord(modelName, id);
   }
 }

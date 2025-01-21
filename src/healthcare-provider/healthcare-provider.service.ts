@@ -70,4 +70,24 @@ export class HealthCareProviderService {
       throw new InternalServerErrorException('Failed to fetch HealthCareProviders: ' + error.message);
     }
   }
+
+  // async delete(id: number, sectionName: string) {
+  //   try {
+  //     const existingHealthCareProvider = await this.prisma.healthCareProvider.findUnique({
+  //       where: { id, sectionName },
+  //     });
+
+  //     if (!existingHealthCareProvider) {
+  //       throw new NotFoundException(`HealthCareProvider with id '${id}' not found in section '${sectionName}'.`);
+  //     }
+
+  //     await this.prisma.healthCareProvider.delete({
+  //       where: { id },
+  //     });
+
+  //     return { message: 'HealthCareProvider deleted successfully' };
+  //   } catch (error) {
+  //     throw new InternalServerErrorException('Failed to delete HealthCareProvider: ' + error.message);
+  //   }
+  // }
 }

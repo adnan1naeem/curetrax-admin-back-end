@@ -4,15 +4,17 @@ import {
   Post, 
   Body, 
   Query, 
-  UseGuards 
+  UseGuards, 
+  Delete
 } from '@nestjs/common';
 import { ProductService } from './product.service';
+import { DatabaseService } from 'src/database/database.service';
 import { UpsertProductDto } from './dto/create-product.dto';
 import { JwtAuthGuard } from '../jwt-auth.guard';
 
 @Controller('product')
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
+  constructor(private readonly productService: ProductService,private readonly prisma: DatabaseService) {}
 
   // Upsert API: Create or Update a product
   @Post('upsert')
@@ -38,4 +40,10 @@ export class ProductController {
     }
     return this.productService.getAll(pageName, sectionName);
   }
+
+  @Delete()
+    async deleteRecord(@Query('id') id: string) {
+      const modelName = 'product'; 
+      return this.prisma.deleteRecord(modelName, id);
+    }
 }
